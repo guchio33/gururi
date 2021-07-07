@@ -6,6 +6,7 @@
       <button @click="showLongText">Toggle long popup</button>
       <button @click="showMap = !showMap">Toggle map</button>
     </div> -->
+    <button @click="now">現在地</button>
     <l-map
       v-if="showMap"
       :zoom="zoom"
@@ -19,7 +20,9 @@
       <l-marker :lat-lng="withPopup">
         <l-popup>
           <div>
-            ポップアップだよ<router-link to="/about">詳細へ</router-link>
+            ポップアップだよ<router-link to="/about"
+              >鎌倉大仏の詳細へ</router-link
+            >
             <p v-show="showParagraph">
               Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque
               sed pretium nisl, ut sagittis sapien. Sed vel sollicitudin nisi.
@@ -40,6 +43,7 @@
           </div>
         </l-tooltip>
       </l-marker>
+      <l-marker :lat-lng="currentLocation"> </l-marker>
     </l-map>
   </div>
 </template>
@@ -64,7 +68,7 @@ export default {
       attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       withPopup: latLng(35.316715, 139.536041),
-      withTooltip: latLng(35.33792, 139.547657),
+      withTooltip: latLng(35.319065, 139.550412),
       currentZoom: 11.5,
       currentCenter: latLng(47.41322, -1.219482),
       showParagraph: false,
@@ -72,6 +76,7 @@ export default {
         zoomSnap: 0.5,
       },
       showMap: true,
+      currentLocation: latLng(0, 0),
     }
   },
   methods: {
@@ -86,6 +91,29 @@ export default {
     },
     innerClick() {
       alert('Click!')
+    },
+    now() {
+      // Geolocation API で現在位置を取得
+      // アロー関数にしないとthis使えない
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.currentLocation = latLng(
+            position.coords.latitude,
+            position.coords.longitude
+          )
+          this.center = latLng(
+            position.coords.latitude,
+            position.coords.longitude
+          )
+
+          console.log(position.coords.latitude, position.coords.longitude)
+          console.log(position.coords.accuracy)
+        },
+        (error) => {
+          alert(error.code)
+        },
+        { enableHighAccuracy: true }
+      )
     },
   },
 }
