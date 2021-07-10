@@ -5,9 +5,11 @@
     <l-map
       v-if="showMap"
       :zoom="zoom"
-      :center="nowLocation"
+      :center="center"
       :options="mapOptions"
       style="height: 80%"
+      @ready="onReady"
+      @locationfound="onLocationFound"
     >
       <l-tile-layer
         :url="url"
@@ -67,35 +69,78 @@ export default {
       },
       showMap: true,
       currentLocation: latLng(0, 0),
+      watch: true,
     }
   },
+  //   created() {
+  //     console.dir(LMap.options)
+  //   },
   methods: {
+    //   初期状態で現在地表示
+    onReady(mapObject) {
+      mapObject.locate()
+      //   console.log(this.$currentLocation)
+    },
+    onLocationFound(location) {
+      //   console.log(this.currentLocation)
+      this.currentLocation = location.latlng
+      this.center = location.latlng
+      //   console.log(location.latlng)
+    },
     // kamakura(){
 
     // }
     now() {
+      this.center = this.currentLocation
+      console.log('現在地取得した！')
+      // 緯度経度が全く同じ値だと地図中心が移動してくれないため、無理やり変更している。その後、現在地をセット
+      //   this.center = latLng(35.319065, 139.550412)
       // Geolocation API で現在位置を取得
-      // アロー関数にしないとthis使えない
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.currentLocation = latLng(
-            position.coords.latitude,
-            position.coords.longitude
-          )
-          this.center = latLng(
-            position.coords.latitude,
-            position.coords.longitude
-          )
+      //   アロー関数にしないとthis使えない
+      //   navigator.geolocation.getCurrentPosition(
+      //     (position) => {
+      //       //   this.currentLocation = latLng(
+      //       //     position.coords.latitude,
+      //       //     position.coords.longitude
+      //       //   )
 
-          console.log(position.coords.latitude, position.coords.longitude)
-          console.log(position.coords.accuracy)
-        },
-        (error) => {
-          alert(error.code)
-        },
-        { enableHighAccuracy: true }
-      )
+      //       //   this.center = latLng(
+      //       //     position.coords.latitude,
+      //       //     position.coords.longitude
+      //       //   )
+
+      //       this.center = this.currentLocation
+      //       console.log('現在地取得した！')
+      //       //   console.log(position.coords.latitude, position.coords.longitude)
+      //       //   console.log(position.coords.accuracy)
+      //     },
+      //     (error) => {
+      //       alert(error.code)
+      //     },
+      //     { enableHighAccuracy: true }
+      //   )
+      //   this.center = this.currentLocation
+      //   console.log(this.currentLocation.lat)
+      //   console.dir(this.center)
     },
+  },
+  mounted() {
+    //   ページ開いたとき現在地を表示→methodsに記載
+    // navigator.geolocation.getCurrentPosition((position) => {
+    //   this.currentLocation = latLng(
+    //     position.coords.latitude,
+    //     position.coords.longitude
+    //   )
+    //   this.center = latLng(position.coords.latitude, position.coords.longitude)
+    // })
+    // 現在地を追跡→ちょっと難しい
+    navigator.geolocation.watchPosition((position) => {
+      this.currentLocation = latLng(
+        position.coords.latitude,
+        position.coords.longitude
+      )
+      console.log('追跡した！')
+    })
   },
 }
 </script>
