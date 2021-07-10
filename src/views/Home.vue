@@ -16,7 +16,11 @@
       @update:center="centerUpdate"
       @update:zoom="zoomUpdate"
     >
-      <l-tile-layer :url="url" :attribution="attribution" />
+      <l-tile-layer
+        :url="url"
+        :attribution="attribution"
+        :options="tileLayerOptions"
+      />
       <l-marker :lat-lng="withPopup">
         <l-popup>
           <div>
@@ -67,6 +71,10 @@ export default {
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      tileLayerOptions: {
+        maxNativeZoom: 18,
+        maxZoom: 21,
+      },
       withPopup: latLng(35.316715, 139.536041),
       withTooltip: latLng(35.319065, 139.550412),
       currentZoom: 11.5,
