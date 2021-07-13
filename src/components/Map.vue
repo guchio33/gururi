@@ -5,7 +5,6 @@
     <l-map
       :zoom="zoom"
       :center="center"
-      :options="mapOptions"
       style="height: 80%"
       @ready="onReady"
       @locationfound="onLocationFound"
@@ -17,19 +16,17 @@
         :attribution="attribution"
         :options="tileLayerOptions"
       />
-      <l-marker :lat-lng="withPopup">
+      <l-marker
+        v-for="historicSite in historicSites"
+        :key="historicSite.id"
+        :lat-lng="historicSite.latLng"
+        :
+      >
         <l-popup>
           <div>
-            ポップアップだよ<router-link to="/about"
-              >鎌倉大仏の詳細へ</router-link
-            >
+            <router-link to="/about">{{ historicSite.title }}</router-link>
           </div>
         </l-popup>
-      </l-marker>
-      <l-marker :lat-lng="withTooltip">
-        <l-tooltip :options="{ permanent: true, interactive: true }">
-          <div>I am a tooltip</div>
-        </l-tooltip>
       </l-marker>
       <l-marker :lat-lng="currentCenter"> </l-marker>
     </l-map>
@@ -38,7 +35,8 @@
 
 <script>
 import { latLng } from 'leaflet'
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet'
+import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet'
+import firebase from 'firebase'
 
 export default {
   name: 'Example',
@@ -47,7 +45,6 @@ export default {
     LTileLayer,
     LMarker,
     LPopup,
-    LTooltip,
   },
   data() {
     return {
@@ -61,16 +58,23 @@ export default {
         maxNativeZoom: 18,
         maxZoom: 21,
       },
-      withPopup: latLng(35.316715, 139.536041),
-      withTooltip: latLng(35.319065, 139.550412),
-      mapOptions: {
-        zoomSnap: 0.5,
-      },
+      historicSites: [],
     }
   },
-  //   created() {
-
-  //   },
+  created() {
+    firebase
+      .firestore()
+      .collection('historicSites')
+      .get()
+      .then((snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          this.historicSites.push({
+            id: doc.id,
+            ...doc.data(),
+          })
+        })
+      })
+  },
   methods: {
     //   コンポーネントが読み込まれたら位置情報取得
     onReady(mapObject) {
