@@ -3,19 +3,19 @@
     <Form @submit.prevent="postHistoricSite">
       史跡名(例:鎌倉大仏)<input
         type="text"
-        v-model="inputHistoricTitle"
+        v-model="inputHistoricSite.title"
         required
         placeholder="鎌倉大仏"
       /><br />
       緯度(例:35.319065)<input
         type="text"
-        v-model="inputHistoricLatitude"
+        v-model="inputHistoricSite.latLng.latitude"
         required
         placeholder="-90~90"
       /><br />
       経度(例:139.550412)<input
         type="text"
-        v-model="inputHistoricLongitude"
+        v-model="inputHistoricSite.latLng.longitude"
         required
         placeholder="-180~180"
       /><br />
@@ -50,7 +50,13 @@
       >
         <l-popup>
           <div>
-            <router-link to="/about">{{ historicSite.title }}</router-link>
+            <router-link
+              :to="{
+                name: 'ShowHistoricSite',
+                params: { id: historicSite.id },
+              }"
+              >{{ historicSite.title }}詳細ページへ</router-link
+            >
           </div>
         </l-popup>
       </l-marker>
@@ -91,9 +97,13 @@ export default {
       // マーカー用の史跡data
       historicSites: [],
       // 登録用の史跡data
-      inputHistoricTitle: '',
-      inputHistoricLatitude: '',
-      inputHistoricLongitude: '',
+      inputHistoricSite: {
+        title: '',
+        latLng: { latitude: '', longitude: '' },
+      },
+      // inputHistoricTitle: '',
+      // inputHistoricLatitude: '',
+      // inputHistoricLongitude: '',
     }
   },
   created() {
@@ -139,13 +149,15 @@ export default {
       this.center = this.currentCenter
     },
     postHistoricSite() {
+      //
+      this.inputHistoricSite.latLng = new firebase.firestore.GeoPoint(
+        this.inputHistoricSite.latLng.latitude,
+        this.inputHistoricSite.latLng.longitude
+      )
       const inputHistoricSite = {
-        title: this.inputHistoricTitle,
-        latLng: new firebase.firestore.GeoPoint(
-          this.inputHistoricLatitude,
-          this.inputHistoricLongitude
-        ),
+        ...this.inputHistoricSite,
       }
+
       firebase
         .firestore()
         .collection('historicSites')
@@ -155,10 +167,12 @@ export default {
             id: ref.id,
             ...inputHistoricSite,
           })
-          ;(this.inputHistoricTitle = ''),
-            (this.inputHistoricLatitude = ''),
-            (this.inputHistoricLongitude = '')
-          alert('新しい史跡が登録されました')
+          // inputHistoricSiteを初期化
+          ;(this.inputHistoricSite = {
+            title: '',
+            latLng: { latitude: '', longitude: '' },
+          }),
+            alert('新しい史跡が登録されました')
         })
     },
   },
