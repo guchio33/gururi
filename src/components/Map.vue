@@ -30,6 +30,7 @@
       {{ historicSite.title }}
     </button>
     <l-map
+      ref="map"
       :zoom="zoom"
       :center="center"
       style="height: 80%"
@@ -60,12 +61,13 @@
           </div>
         </l-popup>
       </l-marker>
-      <l-marker :lat-lng="currentCenter"> </l-marker>
+      <l-marker :lat-lng="currentCenter" :icon="currentIcon"> </l-marker>
     </l-map>
   </div>
 </template>
 
 <script>
+import L from 'leaflet'
 import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet'
 import firebase from 'firebase'
 
@@ -101,9 +103,10 @@ export default {
         title: '',
         latLng: { latitude: '', longitude: '' },
       },
-      // inputHistoricTitle: '',
-      // inputHistoricLatitude: '',
-      // inputHistoricLongitude: '',
+      currentIcon: L.icon({
+        iconUrl: 'https://icooon-mono.com/i/icon_10976/icon_109760.svg',
+        iconSize: [25, 25],
+      }),
     }
   },
   created() {
@@ -146,10 +149,11 @@ export default {
       ]
     },
     getCurrentPosition() {
-      this.center = this.currentCenter
+      // zoomとcenter合わせると動きが悪い(原因不明)
+      // this.$refs.map.setZoom(13)
+      this.$refs.map.setCenter(this.currentCenter)
     },
     postHistoricSite() {
-      //
       this.inputHistoricSite.latLng = new firebase.firestore.GeoPoint(
         this.inputHistoricSite.latLng.latitude,
         this.inputHistoricSite.latLng.longitude
@@ -157,7 +161,6 @@ export default {
       const inputHistoricSite = {
         ...this.inputHistoricSite,
       }
-
       firebase
         .firestore()
         .collection('historicSites')
