@@ -1,11 +1,38 @@
 <template>
   <div style="height: 500px; width: 100%">
+    <Form @submit.prevent="postHistoricSite">
+      史跡名(例:鎌倉大仏)<input
+        type="text"
+        v-model="inputHistoricSite.title"
+        required
+        placeholder="鎌倉大仏"
+      /><br />
+      緯度(例:35.319065)<input
+        type="text"
+        v-model="inputHistoricSite.latLng.latitude"
+        required
+        placeholder="-90~90"
+      /><br />
+      経度(例:139.550412)<input
+        type="text"
+        v-model="inputHistoricSite.latLng.longitude"
+        required
+        placeholder="-180~180"
+      /><br />
+      <button type="submit">登録</button>
+    </Form>
     <button @click="getCurrentPosition">現在地</button>
-    <button @click="kamakura">鎌倉</button>
+    <button
+      v-for="(historicSite, index) in historicSites"
+      :key="historicSite.id"
+      @click="getHistoricSitePosition(index)"
+    >
+      {{ historicSite.title }}
+    </button>
     <l-map
+      ref="map"
       :zoom="zoom"
       :center="center"
-      :options="mapOptions"
       style="height: 80%"
       @ready="onReady"
       @locationfound="onLocationFound"
@@ -17,28 +44,32 @@
         :attribution="attribution"
         :options="tileLayerOptions"
       />
-      <l-marker :lat-lng="withPopup">
+      <l-marker
+        v-for="historicSite in historicSites"
+        :key="historicSite.id"
+        :lat-lng="[historicSite.latLng.latitude, historicSite.latLng.longitude]"
+      >
         <l-popup>
           <div>
-            ポップアップだよ<router-link to="/about"
-              >鎌倉大仏の詳細へ</router-link
+            <router-link
+              :to="{
+                name: 'ShowHistoricSite',
+                params: { id: historicSite.id },
+              }"
+              >{{ historicSite.title }}詳細ページへ</router-link
             >
           </div>
         </l-popup>
       </l-marker>
-      <l-marker :lat-lng="withTooltip">
-        <l-tooltip :options="{ permanent: true, interactive: true }">
-          <div>I am a tooltip</div>
-        </l-tooltip>
-      </l-marker>
-      <l-marker :lat-lng="currentCenter"> </l-marker>
+      <l-marker :lat-lng="currentCenter" :icon="currentIcon"> </l-marker>
     </l-map>
   </div>
 </template>
 
 <script>
-import { latLng } from 'leaflet'
-import { LMap, LTileLayer, LMarker, LPopup, LTooltip } from 'vue2-leaflet'
+import L from 'leaflet'
+import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet'
+import firebase from 'firebase'
 
 export default {
   name: 'Example',
@@ -47,30 +78,51 @@ export default {
     LTileLayer,
     LMarker,
     LPopup,
-    LTooltip,
   },
   data() {
     return {
+      // 初期zoomレベル
       zoom: 13,
-      center: latLng(35.319065, 139.550412),
-      currentCenter: latLng(35.319065, 139.550412),
+      // 初期地図位置(鎌倉駅)
+      center: [35.319065, 139.550412],
+      currentCenter: [35.319065, 139.550412],
+      // 使用する地図のレイヤー
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      // 地図の参照
       attribution:
         '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      // maxZoomを18→21
       tileLayerOptions: {
         maxNativeZoom: 18,
         maxZoom: 21,
       },
-      withPopup: latLng(35.316715, 139.536041),
-      withTooltip: latLng(35.319065, 139.550412),
-      mapOptions: {
-        zoomSnap: 0.5,
+      // マーカー用の史跡data
+      historicSites: [],
+      // 登録用の史跡data
+      inputHistoricSite: {
+        title: '',
+        latLng: { latitude: '', longitude: '' },
       },
+      currentIcon: L.icon({
+        iconUrl: 'https://icooon-mono.com/i/icon_10976/icon_109760.svg',
+        iconSize: [25, 25],
+      }),
     }
   },
-  //   created() {
-
-  //   },
+  created() {
+    firebase
+      .firestore()
+      .collection('historicSites')
+      .get()
+      .then((snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          this.historicSites.push({
+            id: doc.id,
+            ...doc.data(),
+          })
+        })
+      })
+  },
   methods: {
     //   コンポーネントが読み込まれたら位置情報取得
     onReady(mapObject) {
@@ -82,28 +134,56 @@ export default {
       // 取得した位置情報にマーカーをおく
       this.currentCenter = location.latlng
     },
-    // 下記二つ必須 ※これがないとzoomが更新されない
+    //zommレベルをデータに格納(必須)
     zoomUpdated(zoom) {
       this.zoom = zoom
     },
+    // 中心位置をデータに格納(必須)
     centerUpdated(center) {
       this.center = center
     },
-    kamakura() {
-      this.center = latLng(35.319065, 139.550412)
+    getHistoricSitePosition(index) {
+      this.center = [
+        this.historicSites[index].latLng.latitude,
+        this.historicSites[index].latLng.longitude,
+      ]
     },
     getCurrentPosition() {
-      this.center = this.currentCenter
+      // zoomとcenter合わせると動きが悪い(原因不明)
+      // this.$refs.map.setZoom(13)
+      this.$refs.map.setCenter(this.currentCenter)
+    },
+    postHistoricSite() {
+      this.inputHistoricSite.latLng = new firebase.firestore.GeoPoint(
+        this.inputHistoricSite.latLng.latitude,
+        this.inputHistoricSite.latLng.longitude
+      )
+      const inputHistoricSite = {
+        ...this.inputHistoricSite,
+      }
+      firebase
+        .firestore()
+        .collection('historicSites')
+        .add(inputHistoricSite)
+        .then((ref) => {
+          this.historicSites.push({
+            id: ref.id,
+            ...inputHistoricSite,
+          })
+          // inputHistoricSiteを初期化
+          ;(this.inputHistoricSite = {
+            title: '',
+            latLng: { latitude: '', longitude: '' },
+          }),
+            alert('新しい史跡が登録されました')
+        })
     },
   },
 
   mounted() {
     // 現在地を追跡
     navigator.geolocation.watchPosition((position) => {
-      this.currentCenter = latLng(
-        position.coords.latitude,
-        position.coords.longitude
-      )
+      this.currentCenter = [position.coords.latitude, position.coords.longitude]
     })
   },
 }
