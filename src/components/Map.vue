@@ -36,7 +36,10 @@
                 params: { id: historicSite.id },
               }"
               >{{ historicSite.title }}詳細ページへ</router-link
-            >
+            ><audio
+              src="http://pro-video.jp/voice/announce/mp3/ohayo01mayu.mp3"
+              controls
+            ></audio>
           </div>
         </l-popup>
       </l-marker>
