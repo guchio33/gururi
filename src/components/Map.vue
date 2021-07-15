@@ -1,26 +1,5 @@
 <template>
   <div style="height: 500px; width: 100%">
-    <Form @submit.prevent="postHistoricSite">
-      史跡名(例:鎌倉大仏)<input
-        type="text"
-        v-model="inputHistoricSite.title"
-        required
-        placeholder="鎌倉大仏"
-      /><br />
-      緯度(例:35.319065)<input
-        type="text"
-        v-model="inputHistoricSite.latLng.latitude"
-        required
-        placeholder="-90~90"
-      /><br />
-      経度(例:139.550412)<input
-        type="text"
-        v-model="inputHistoricSite.latLng.longitude"
-        required
-        placeholder="-180~180"
-      /><br />
-      <button type="submit">登録</button>
-    </Form>
     <button @click="getCurrentPosition">現在地</button>
     <button
       v-for="(historicSite, index) in historicSites"
@@ -72,7 +51,6 @@ import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet'
 import firebase from 'firebase'
 
 export default {
-  name: 'Example',
   components: {
     LMap,
     LTileLayer,
@@ -98,11 +76,7 @@ export default {
       },
       // マーカー用の史跡data
       historicSites: [],
-      // 登録用の史跡data
-      inputHistoricSite: {
-        title: '',
-        latLng: { latitude: '', longitude: '' },
-      },
+
       currentIcon: L.icon({
         iconUrl: 'https://icooon-mono.com/i/icon_10976/icon_109760.svg',
         iconSize: [25, 25],
@@ -152,31 +126,6 @@ export default {
       // zoomとcenter合わせると動きが悪い(原因不明)
       // this.$refs.map.setZoom(13)
       this.$refs.map.setCenter(this.currentCenter)
-    },
-    postHistoricSite() {
-      this.inputHistoricSite.latLng = new firebase.firestore.GeoPoint(
-        this.inputHistoricSite.latLng.latitude,
-        this.inputHistoricSite.latLng.longitude
-      )
-      const inputHistoricSite = {
-        ...this.inputHistoricSite,
-      }
-      firebase
-        .firestore()
-        .collection('historicSites')
-        .add(inputHistoricSite)
-        .then((ref) => {
-          this.historicSites.push({
-            id: ref.id,
-            ...inputHistoricSite,
-          })
-          // inputHistoricSiteを初期化
-          ;(this.inputHistoricSite = {
-            title: '',
-            latLng: { latitude: '', longitude: '' },
-          }),
-            alert('新しい史跡が登録されました')
-        })
     },
   },
 
