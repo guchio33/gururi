@@ -81,7 +81,6 @@ export default {
         iconUrl: 'https://icooon-mono.com/i/icon_10976/icon_109760.svg',
         iconSize: [25, 25],
       }),
-      // sound
       soundUrl: '',
     }
   },
@@ -98,12 +97,12 @@ export default {
           })
         })
       }),
+      // storageから取得
       firebase
         .storage()
         .refFromURL('gs://gururi-db37f.appspot.com/sounds/hori_sikouryou.mp3')
         .getDownloadURL()
         .then((url) => {
-          console.log(url)
           this.soundUrl = url
         })
   },
