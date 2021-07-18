@@ -1,20 +1,26 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '@/views/Home.vue'
+import Map from '@/views/Map.vue'
 import ShowHistoricSite from '@/views/ShowHistoricSite.vue'
+import PostHistoricSite from '@/views/PostHistoricSite.vue'
 
 Vue.use(VueRouter)
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: Home,
+    name: 'Map',
+    component: Map,
   },
   {
-    path: '/historic-site/:id',
+    path: '/show-historic-site/:id',
     name: 'ShowHistoricSite',
     component: ShowHistoricSite,
+  },
+  {
+    path: '/post-historic-site',
+    name: 'PostHistoricSite',
+    component: PostHistoricSite,
   },
 ]
 
