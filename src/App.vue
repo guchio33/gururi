@@ -1,9 +1,5 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">home</router-link>|
-      <router-link to="/post-historic-site">史跡登録</router-link>
-    </div>
     <router-view />
   </div>
 </template>

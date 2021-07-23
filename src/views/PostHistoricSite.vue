@@ -48,10 +48,11 @@ export default {
         .collection('historicSites')
         .add(inputHistoricSite)
         .then((ref) => {
-          this.historicSites.push({
-            id: ref.id,
-            ...inputHistoricSite,
-          })
+          // this.historicSites.push({
+          //   id: ref.id,
+          //   ...inputHistoricSite,
+          // })
+          console.log(ref)
           // inputHistoricSiteを初期化
           ;(this.inputHistoricSite = {
             title: '',

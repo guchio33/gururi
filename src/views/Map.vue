@@ -1,18 +1,9 @@
 <template>
-  <div style="height: 500px; width: 100%">
-    <button @click="getCurrentPosition">現在地</button>
-    <button
-      v-for="(historicSite, index) in historicSites"
-      :key="historicSite.id"
-      @click="getHistoricSitePosition(index)"
-    >
-      {{ historicSite.title }}
-    </button>
+  <div style="height: 95vh">
     <l-map
       ref="map"
       :zoom="zoom"
       :center="center"
-      style="height: 80%"
       @ready="onReady"
       @locationfound="onLocationFound"
       @update:zoom="zoomUpdated"
@@ -41,13 +32,44 @@
         </l-popup>
       </l-marker>
       <l-marker :lat-lng="currentCenter" :icon="currentIcon"> </l-marker>
+      <l-control position="bottomleft">
+        <button @click="listHistoricSiteSeen">リスト</button>
+      </l-control>
+      <l-control position="bottomleft">
+        <button @click="getCurrentPosition">現在地</button>
+      </l-control>
     </l-map>
+    <div class="list">
+      <div v-if="listHistoricSite">
+        <button @click="listHistoricSiteHidden">表示を隠す</button>
+        <div
+          v-for="(historicSite, index) in historicSites"
+          :key="historicSite.id"
+        >
+          <button @click="getHistoricSitePosition(index)">
+            {{ historicSite.title }}
+          </button>
+        </div>
+      </div>
+      <button v-else @click="listHistoricSiteSeen">
+        ListHistoricSiteを表示する
+      </button>
+    </div>
   </div>
 </template>
-
+<style scoped>
+.list {
+  /* position: relative; */
+  /* top: -40px; */
+  /* z-index: 1000; */
+}
+.list button {
+  width: 100%;
+}
+</style>
 <script>
 import L from 'leaflet'
-import { LMap, LTileLayer, LMarker, LPopup } from 'vue2-leaflet'
+import { LMap, LTileLayer, LMarker, LPopup, LControl } from 'vue2-leaflet'
 import firebase from 'firebase'
 
 export default {
@@ -56,6 +78,7 @@ export default {
     LTileLayer,
     LMarker,
     LPopup,
+    LControl,
   },
   data() {
     return {
@@ -82,6 +105,7 @@ export default {
         iconSize: [25, 25],
       }),
       soundUrl: '',
+      listHistoricSite: false,
     }
   },
   created() {
@@ -125,6 +149,7 @@ export default {
     centerUpdated(center) {
       this.center = center
     },
+    // 史跡の位置に移動
     getHistoricSitePosition(index) {
       this.center = [
         this.historicSites[index].latLng.latitude,
@@ -135,6 +160,12 @@ export default {
       // zoomとcenter合わせると動きが悪い(原因不明)
       // this.$refs.map.setZoom(13)
       this.$refs.map.setCenter(this.currentCenter)
+    },
+    listHistoricSiteSeen() {
+      this.listHistoricSite = true
+    },
+    listHistoricSiteHidden() {
+      this.listHistoricSite = false
     },
   },
 
