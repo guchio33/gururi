@@ -31,6 +31,5 @@ navigator.geolocation.watchPosition((position) => {
     latitude: position.coords.latitude,
     longitude: position.coords.longitude,
   })
-  console.log(position.coords)
 })
 Vue.prototype.$position = $position

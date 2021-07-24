@@ -14,6 +14,7 @@ const firebaseConfig = {
 }
 
 firebase.initializeApp(firebaseConfig)
+
 // 以下ログイン機能関連
 const initialUserState = {
   uid: '',
