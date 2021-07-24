@@ -3,6 +3,7 @@ import VueRouter from 'vue-router'
 import Map from '@/views/Map.vue'
 import ShowHistoricSite from '@/views/ShowHistoricSite.vue'
 import PostHistoricSite from '@/views/PostHistoricSite.vue'
+import SignUp from '@/views/SignUp.vue'
 
 Vue.use(VueRouter)
 
@@ -21,6 +22,11 @@ const routes = [
     path: '/post-historic-site',
     name: 'PostHistoricSite',
     component: PostHistoricSite,
+  },
+  {
+    path: '/sign-up',
+    name: 'SignUp',
+    component: SignUp,
   },
 ]
 

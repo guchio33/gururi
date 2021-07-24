@@ -38,6 +38,9 @@
       <l-control position="bottomleft">
         <button @click="getCurrentPosition">現在地</button>
       </l-control>
+      <l-control position="bottomleft">
+        <router-link to="/sign-up"><button>ログイン</button></router-link>
+      </l-control>
     </l-map>
     <div class="list">
       <div v-if="listHistoricSite">
