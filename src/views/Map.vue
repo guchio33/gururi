@@ -5,7 +5,6 @@
       :zoom="zoom"
       :center="center"
       @ready="onReady"
-      @locationfound="onLocationFound"
       @update:zoom="zoomUpdated"
       @update:center="centerUpdated"
     >
@@ -89,7 +88,8 @@ export default {
       zoom: 13,
       // 初期地図位置(鎌倉駅)
       center: [35.319065, 139.550412],
-      currentCenter: [35.319065, 139.550412],
+      // 現在地マーカーの位置
+      // currentCenter: [35.319065, 139.550412],
       // 使用する地図のレイヤー
       url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       // 地図の参照
@@ -133,17 +133,22 @@ export default {
           this.soundUrl = url
         })
   },
+  computed: {
+    currentCenter() {
+      return [this.$position.latitude, this.$position.longitude]
+    },
+  },
   methods: {
     //   コンポーネントが読み込まれたら位置情報取得
-    onReady(mapObject) {
-      mapObject.locate()
+    onReady() {
+      this.center = [this.$position.latitude, this.$position.longitude]
     },
-    onLocationFound(location) {
-      // 取得した位置情報を中心にする
-      this.center = location.latlng
-      // 取得した位置情報にマーカーをおく
-      this.currentCenter = location.latlng
-    },
+    // onLocationFound(location) {
+    //   // 取得した位置情報を中心にする
+    //   this.center = location.latlng
+    //   // 取得した位置情報にマーカーをおく
+    //   this.currentCenter = location.latlng
+    // },
     //zommレベルをデータに格納(必須)
     zoomUpdated(zoom) {
       this.zoom = zoom
@@ -162,7 +167,8 @@ export default {
     getCurrentPosition() {
       // zoomとcenter合わせると動きが悪い(原因不明)
       // this.$refs.map.setZoom(13)
-      this.$refs.map.setCenter(this.currentCenter)
+      // this.$refs.map.setCenter(this.currentCenter)
+      this.center = [this.$position.latitude, this.$position.longitude]
     },
     listHistoricSiteSeen() {
       this.listHistoricSite = true
@@ -172,11 +178,12 @@ export default {
     },
   },
 
-  mounted() {
-    // 現在地を追跡
-    navigator.geolocation.watchPosition((position) => {
-      this.currentCenter = [position.coords.latitude, position.coords.longitude]
-    })
-  },
+  // mounted() {
+  //   // 現在地を追跡
+  //   navigator.geolocation.watchPosition((position) => {
+  //     this.currentCenter = [position.coords.latitude, position.coords.longitude]
+  //     console.log('追跡')
+  //   })
+  // },
 }
 </script>

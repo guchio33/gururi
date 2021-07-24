@@ -20,3 +20,17 @@ new Vue({
   router,
   render: (h) => h(App),
 }).$mount('#app')
+
+// 位置情報追跡
+const $position = Vue.observable({
+  latitude: 0,
+  longitude: 0,
+})
+navigator.geolocation.watchPosition((position) => {
+  Object.assign($position, {
+    latitude: position.coords.latitude,
+    longitude: position.coords.longitude,
+  })
+  console.log(position.coords)
+})
+Vue.prototype.$position = $position
