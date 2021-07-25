@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '@/views/Home.vue'
 import ShowHistoricSite from '@/views/ShowHistoricSite.vue'
+import CommentHistoricSpot from '@/components/CommentHistoricSpot.vue'
 
 Vue.use(VueRouter)
 
@@ -15,6 +16,11 @@ const routes = [
     path: '/historic-site/:id',
     name: 'ShowHistoricSite',
     component: ShowHistoricSite,
+  },
+  {
+    path: '/comment-site/:id',
+    name: 'CommentHistoricSpot',
+    component: CommentHistoricSpot,
   },
 ]
 
