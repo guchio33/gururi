@@ -4,7 +4,7 @@
     <h1>{{ historicSite.title }}</h1>
     <p>{{ historicSite.latLng }}</p>
     <h1>音声スポット登録</h1>
-    <form @submit="postSoundSite">
+    <form @submit.prevent="postSoundSite">
       <div>
         音声ファイル：<input type="file" @change="soundFile" required />
       </div>

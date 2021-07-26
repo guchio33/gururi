@@ -3,51 +3,59 @@
     <router-link to="/">マップへ戻る</router-link>
     <!-- 以下サインアップ機能 -->
     <div v-if="!$auth.currentUser.uid">
-      <h1>サインアップ</h1>
-      <input
-        type="email"
-        placeholder="メールアドレス"
-        v-model="signUpEmail"
-        required
-      />
-      <input
-        type="password"
-        placeholder="パスワード"
-        v-model="signUpPassword"
-        required
-      />
-      <button @click="signUp">サインアップ</button>
+      <form @submit.prevent="signUp">
+        <h1>サインアップ</h1>
+        <input
+          type="email"
+          placeholder="メールアドレス"
+          v-model="signUpEmail"
+          required
+        />
+        <input
+          type="password"
+          placeholder="パスワード"
+          v-model="signUpPassword"
+          required
+          autocomplete="on"
+        />
+        <button type="submit">サインアップ</button>
+      </form>
       <!-- 以下サインイン機能 -->
-      <h1>サインイン</h1>
-      <input
-        type="email"
-        placeholder="メールアドレス"
-        v-model="signInEmail"
-        required
-      />
-      <input
-        type="password"
-        placeholder="パスワード"
-        v-model="signInPassword"
-        required
-      />
-      <button @click="signIn">サインイン</button>
+      <form @submit.prevent="signIn">
+        <h1>サインイン</h1>
+        <input
+          type="email"
+          placeholder="メールアドレス"
+          v-model="signInEmail"
+          required
+        />
+        <input
+          type="password"
+          placeholder="パスワード"
+          v-model="signInPassword"
+          required
+          autocomplete="on"
+        />
+        <button type="submit">サインイン</button>
+      </form>
     </div>
     <!-- 以下ログイン後 -->
     <!-- プロフィール編集 -->
     <div v-else-if="isEditedProfile">
-      <h1>プロフィール編集</h1>
-      <div>プロフィール画像:<input type="file" @change="profileImage" /></div>
-      <div>
-        ユーザー名:
-        <input
-          type="text"
-          placeholder="ユーザー名"
-          v-model="$auth.currentUser.displayName"
-          required
-        />
-      </div>
-      <button @click="updateProfile">更新する</button>
+      <form @submit.prevent="updateProfile">
+        <h1>プロフィール編集</h1>
+        <div>プロフィール画像:<input type="file" @change="profileImage" /></div>
+        <div>
+          ユーザー名:
+          <input
+            type="text"
+            placeholder="ユーザー名"
+            v-model="$auth.currentUser.displayName"
+            required
+          />
+        </div>
+        <button type="submit">更新する</button>
+      </form>
     </div>
     <!-- プロフィール表示 -->
     <div v-else>
