@@ -4,6 +4,7 @@ import Map from '@/views/Map.vue'
 import ShowHistoricSite from '@/views/ShowHistoricSite.vue'
 import PostHistoricSite from '@/views/PostHistoricSite.vue'
 import SignUp from '@/views/SignUp.vue'
+import EditHistoricSite from '@/views/EditHistoricSite.vue'
 
 Vue.use(VueRouter)
 
@@ -23,6 +24,12 @@ const routes = [
     name: 'PostHistoricSite',
     component: PostHistoricSite,
   },
+  {
+    path: '/edit-historic-site/:id',
+    name: 'EditHistoricSite',
+    component: EditHistoricSite,
+  },
+
   {
     path: '/sign-up',
     name: 'SignUp',

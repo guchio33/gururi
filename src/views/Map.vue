@@ -26,7 +26,8 @@
                 params: { id: historicSite.id },
               }"
               >{{ historicSite.title }}詳細ページへ</router-link
-            ><audio :src="soundUrl" controls></audio>
+            >
+            <!-- <audio :src="soundUrl" controls></audio> -->
           </div>
         </l-popup>
       </l-marker>
@@ -38,7 +39,15 @@
         <button @click="getCurrentPosition">現在地</button>
       </l-control>
       <l-control position="bottomleft">
-        <router-link to="/sign-up"><button>ログイン</button></router-link>
+        <router-link to="/sign-up"
+          ><button v-if="!$auth.currentUser.uid">ログイン</button>
+          <button v-else>ログイン済み</button>
+        </router-link>
+      </l-control>
+      <l-control position="bottomleft">
+        <router-link to="/post-historic-site"
+          ><button>史跡管理</button>
+        </router-link>
       </l-control>
     </l-map>
     <div class="list">
@@ -107,7 +116,7 @@ export default {
         iconUrl: 'https://icooon-mono.com/i/icon_10976/icon_109760.svg',
         iconSize: [25, 25],
       }),
-      soundUrl: '',
+      // soundUrl: '',
       listHistoricSite: false,
     }
   },
@@ -123,15 +132,7 @@ export default {
             ...doc.data(),
           })
         })
-      }),
-      // storageから取得
-      firebase
-        .storage()
-        .refFromURL('gs://gururi-db37f.appspot.com/sounds/hori_sikouryou.mp3')
-        .getDownloadURL()
-        .then((url) => {
-          this.soundUrl = url
-        })
+      })
   },
   computed: {
     currentCenter() {

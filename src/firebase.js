@@ -18,6 +18,7 @@ firebase.initializeApp(firebaseConfig)
 // 以下ログイン機能関連
 const initialUserState = {
   uid: '',
+  email: '',
   displayName: '',
   photoURL: '',
 }
@@ -27,7 +28,15 @@ const $auth = Vue.observable({
   },
 })
 firebase.auth().onAuthStateChanged((user) => {
+  let state
   if (user) {
+    const { uid, email } = user
+    state = {
+      uid,
+      email,
+      displayName: '匿名さん',
+      photoURL: 'https://via.placeholder.com/150',
+    }
     console.log('logged')
     firebase
       .firestore()
@@ -35,18 +44,20 @@ firebase.auth().onAuthStateChanged((user) => {
       .doc(user.uid)
       .get()
       .then((doc) => {
-        if (!doc.exists) {
-          firebase.firestore().collection('users').doc(user.uid).set({
-            uid: user.uid,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-          })
+        if (doc.exists) {
+          // サインイン
+          Object.assign(state, doc.data())
+        } else {
+          // サインアップ
+          firebase.firestore().collection('users').doc(user.uid).set(state)
         }
-        Object.assign($auth.currentUser, doc.data())
+        Object.assign($auth.currentUser, state)
       })
   } else {
+    // サインアウト
     console.log('not logged')
-    Object.assign($auth.currentUser, initialUserState)
+    state = initialUserState
+    Object.assign($auth.currentUser, state)
   }
 })
 Vue.prototype.$auth = $auth

@@ -1,38 +1,61 @@
 <template>
   <div>
-    {{ isSignedIn }}
+    <router-link to="/">マップへ戻る</router-link>
     <!-- 以下サインアップ機能 -->
-    <div v-if="!isSignedIn">
+    <div v-if="!$auth.currentUser.uid">
       <h1>サインアップ</h1>
-      <input
-        type="text"
-        placeholder="ユーザー名"
-        v-model="displayName"
-        required
-      />
-      <br />
-      プロフィール画像<input type="file" />
       <input
         type="email"
         placeholder="メールアドレス"
-        v-model="email"
+        v-model="signUpEmail"
         required
       />
       <input
         type="password"
         placeholder="パスワード"
-        v-model="password"
+        v-model="signUpPassword"
         required
       />
       <button @click="signUp">サインアップ</button>
       <!-- 以下サインイン機能 -->
       <h1>サインイン</h1>
-      <input type="email" placeholder="メールアドレス" v-model="email2" />
-      <input type="password" placeholder="パスワード" v-model="password2" />
+      <input
+        type="email"
+        placeholder="メールアドレス"
+        v-model="signInEmail"
+        required
+      />
+      <input
+        type="password"
+        placeholder="パスワード"
+        v-model="signInPassword"
+        required
+      />
       <button @click="signIn">サインイン</button>
     </div>
-    <!-- 以下サインアウト -->
+    <!-- 以下ログイン後 -->
+    <!-- プロフィール編集 -->
+    <div v-else-if="isEditedProfile">
+      <h1>プロフィール編集</h1>
+      <div>プロフィール画像:<input type="file" @change="profileImage" /></div>
+      <div>
+        ユーザー名:
+        <input
+          type="text"
+          placeholder="ユーザー名"
+          v-model="$auth.currentUser.displayName"
+          required
+        />
+      </div>
+      <button @click="updateProfile">更新する</button>
+    </div>
+    <!-- プロフィール表示 -->
     <div v-else>
+      <h1>プロフィール</h1>
+      <img :src="$auth.currentUser.photoURL" width="150" height="150" />
+      <div>メールアドレス:{{ $auth.currentUser.email }}</div>
+      <div>ユーザー名:{{ $auth.currentUser.displayName }}</div>
+      <button @click="editProfile">プロフィールを編集する</button>
       <h1>サインアウト</h1>
       <button @click="signOut">サインアウト</button>
     </div>
@@ -44,40 +67,64 @@ import firebase from 'firebase'
 export default {
   data() {
     return {
-      email: '',
-      password: '',
-      email2: '',
-      password2: '',
-      displayName: '',
-      photoURL:
-        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRABORT0Pf1bkxpOsQMlTk6G9VmNasbrCKoPA&usqp=CAU',
-      user: null,
+      signUpEmail: '',
+      signUpPassword: '',
+      signInEmail: '',
+      signInPassword: '',
+      isEditedProfile: false,
     }
-  },
-  computed: {
-    isSignedIn() {
-      return this.$auth.currentUser.uid
-    },
   },
   methods: {
     signUp() {
       firebase
         .auth()
-        .createUserWithEmailAndPassword(this.email, this.password)
-        .then((userCredential) => {
-          userCredential.user.updateProfile({
-            displayName: this.displayName,
-            photoURL: this.photoURL,
-          })
-        })
+        .createUserWithEmailAndPassword(this.signUpEmail, this.signUpPassword)
     },
     signIn() {
-      firebase.auth().signInWithEmailAndPassword(this.email2, this.password2)
-      // .then((userCredential) => {
-      // })
+      firebase
+        .auth()
+        .signInWithEmailAndPassword(this.signInEmail, this.signInPassword)
     },
     signOut() {
       firebase.auth().signOut()
+    },
+    updateProfile() {
+      let updateState
+      firebase
+        .storage()
+        .ref()
+        .child('photoImages/' + this.$auth.currentUser.uid)
+        .getDownloadURL()
+        .then((url) => {
+          this.$auth.currentUser.photoURL = url
+        })
+        .then(
+          (updateState = {
+            displayName: this.$auth.currentUser.displayName,
+            photoURL: this.$auth.currentUser.photoURL,
+          }),
+          firebase.auth().currentUser.updateProfile({
+            updateState,
+          }),
+          firebase
+            .firestore()
+            .collection('users')
+            .doc(this.$auth.currentUser.uid)
+            .update(updateState)
+        )
+      // Object.assign(this.$auth.currentUser, updateState)
+      this.isEditedProfile = false
+    },
+    editProfile() {
+      this.isEditedProfile = true
+    },
+    profileImage(e) {
+      // console.log(e.target.files[0])
+      firebase
+        .storage()
+        .ref()
+        .child('photoImages/' + this.$auth.currentUser.uid)
+        .put(e.target.files[0])
     },
   },
 }
