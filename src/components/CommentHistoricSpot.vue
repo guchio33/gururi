@@ -8,6 +8,7 @@
     <ul>
       <li v-for="comment in comments" :key="comment.id">
         {{ comment.text }}
+        <button @click="commentDelete(index, comment.id)">削除</button>
       </li>
     </ul>
   </div>
@@ -58,7 +59,17 @@ export default {
               text: '',
             })
           )
-          alert('コメントが追加されました')
+        })
+    },
+    commentDelete(index, id) {
+      this.comments.splice(index, 1)
+      firebase
+        .firestore()
+        .collection('commentSites')
+        .doc(id)
+        .delete()
+        .then(() => {
+          console.log('コメントを削除しました')
         })
     },
   },
