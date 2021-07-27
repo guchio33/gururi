@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 95vh">
+  <div style="height: 90vh">
     <l-map
       ref="map"
       :zoom="zoom"
