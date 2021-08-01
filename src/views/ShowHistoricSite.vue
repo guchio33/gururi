@@ -16,10 +16,16 @@
       </form>
     </div>
     <h2>コメント一覧</h2>
-    <div v-for="comment in comments" :key="comment.id">
+    <div v-for="(comment, index) in comments" :key="comment.id">
       <img :src="comment.photoURL" width="50" height="50" />{{ comment.name }}
       <p>{{ comment.text }}</p>
-      <!-- <button @click="likeComment(comment)">いいね！</button> -->
+      <p>{{ comment.likes.length }}いいね</p>
+      <div v-if="comment.likes.find((ob) => ob.uid == $auth.currentUser.uid)">
+        いいね済み
+      </div>
+      <div v-else-if="$auth.currentUser.uid">
+        <button @click="likeComment(index, comment)">いいね！</button>
+      </div>
     </div>
   </div>
 </template>
@@ -34,16 +40,26 @@ export default {
     }
   },
   methods: {
-    // likeComment(comment) {
-    //   firebase
-    //     .firestore()
-    //     .collection('historicSites')
-    //     .doc(this.$route.params.id)
-    //     .collection('comments')
-    //     .doc(comment.id)
-    //     .collection('likes')
-    //     .add({ uid: this.$auth.currentUser.uid })
-    // },
+    likeComment(index, comment) {
+      firebase
+        .firestore()
+        .collection('historicSites')
+        .doc(this.$route.params.id)
+        .collection('comments')
+        .doc(comment.id)
+        .collection('likes')
+        .add({
+          uid: this.$auth.currentUser.uid,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        })
+        .then((ref) => {
+          this.comments[index].likes.push({
+            id: ref.id,
+            uid: this.$auth.currentUser.uid,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          })
+        })
+    },
     postComment() {
       let comment = {
         text: this.inputText,
@@ -68,29 +84,39 @@ export default {
     },
   },
   created() {
-    firebase
+    const historicSiteRef = firebase
       .firestore()
       .collection('historicSites')
       .doc(this.$route.params.id)
-      .get()
-      .then((snapshot) => {
-        this.historicSite = {
-          id: snapshot.id,
-          ...snapshot.data(),
-        }
-      })
+    historicSiteRef.get().then((snapshot) => {
+      this.historicSite = {
+        id: snapshot.id,
+        ...snapshot.data(),
+      }
+    })
     // コメント取得
-    firebase
-      .firestore()
-      .collection('historicSites')
-      .doc(this.$route.params.id)
-      .collection('comments')
+    const commentsRef = historicSiteRef.collection('comments')
+    commentsRef
       .orderBy('createdAt')
       .get()
       .then((snapshot) => {
         snapshot.docs.forEach((doc) => {
+          let likes = []
+          commentsRef
+            .doc(doc.id)
+            .collection('likes')
+            .get()
+            .then((snapshot2) => {
+              snapshot2.docs.forEach((doc2) => {
+                likes.push({
+                  id: doc2.id,
+                  ...doc2.data(),
+                })
+              })
+            })
           this.comments.push({
             id: doc.id,
+            likes: likes,
             ...doc.data(),
           })
         })

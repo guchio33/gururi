@@ -56,21 +56,17 @@ export default {
     }
   },
   created() {
-    firebase
+    const historicSiteRef = firebase
       .firestore()
       .collection('historicSites')
       .doc(this.$route.params.id)
-      .get()
-      .then((snapshot) => {
-        this.historicSite = {
-          id: snapshot.id,
-          ...snapshot.data(),
-        }
-      })
-    firebase
-      .firestore()
-      .collection('historicSites')
-      .doc(this.$route.params.id)
+    historicSiteRef.get().then((snapshot) => {
+      this.historicSite = {
+        id: snapshot.id,
+        ...snapshot.data(),
+      }
+    })
+    historicSiteRef
       .collection('soundSites')
       .get()
       .then((snapshot) => {

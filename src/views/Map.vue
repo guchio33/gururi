@@ -1,5 +1,5 @@
 <template>
-  <div style="height: 90vh">
+  <div style="height: 80vh">
     <l-map
       ref="map"
       :zoom="zoom"
@@ -157,34 +157,30 @@ export default {
     }
   },
   mounted() {
-    firebase
-      .firestore()
-      .collection('historicSites')
-      .get()
-      .then((snapshot1) => {
-        snapshot1.docs.forEach((doc1) => {
-          let soundSites = []
-          firebase
-            .firestore()
-            .collection('historicSites')
-            .doc(doc1.id)
-            .collection('soundSites')
-            .get()
-            .then((snapshot2) => {
-              snapshot2.docs.forEach((doc2) => {
-                soundSites.push({
-                  id: doc2.id,
-                  ...doc2.data(),
-                })
+    const historicSitesRef = firebase.firestore().collection('historicSites')
+
+    historicSitesRef.get().then((snapshot1) => {
+      snapshot1.docs.forEach((doc1) => {
+        let soundSites = []
+        historicSitesRef
+          .doc(doc1.id)
+          .collection('soundSites')
+          .get()
+          .then((snapshot2) => {
+            snapshot2.docs.forEach((doc2) => {
+              soundSites.push({
+                id: doc2.id,
+                ...doc2.data(),
               })
             })
-          this.historicSites.push({
-            id: doc1.id,
-            ...doc1.data(),
-            soundSites: soundSites,
           })
+        this.historicSites.push({
+          id: doc1.id,
+          ...doc1.data(),
+          soundSites: soundSites,
         })
       })
+    })
   },
   computed: {
     currentCenter() {
